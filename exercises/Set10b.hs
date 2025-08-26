@@ -1,9 +1,3 @@
--- This exercise set hides most of Prelude. You only have access to
--- the Bool, Int and list types, and pattern matching.
---
--- In particular, seq is not available, so you must use pattern
--- matching to force evaluation!
-
 {-# LANGUAGE NoImplicitPrelude #-}
 
 module Set10b where
@@ -12,82 +6,55 @@ import Mooc.VeryLimitedPrelude
 import Mooc.Todo
 
 ------------------------------------------------------------------------------
--- Ex 1: Define the operator ||| that works like ||, but forces its
--- _right_ argument instead of the left one.
---
--- Examples:
---   False ||| False     ==> False
---   True ||| False      ==> True
---   undefined ||| True  ==> True
---   False ||| undefined ==> an error!
+
+-- Ex 1: (|||) that forces the *right* argument only
 
 (|||) :: Bool -> Bool -> Bool
-x ||| y = todo
+False ||| y = y
+True  ||| _ = True
 
 ------------------------------------------------------------------------------
--- Ex 2: Define the function boolLength, that returns the length of a
--- list of booleans and forces all of the elements
---
--- Examples:
---   boolLength [False,True,False] ==> 3
---   boolLength [False,undefined]  ==> an error!
---
--- Note that with the ordinary length function,
---   length [False,undefined] ==> 2
+
+-- Ex 2: Count length of list and force all elements
 
 boolLength :: [Bool] -> Int
-boolLength xs = todo
+boolLength [] = 0
+boolLength (x:xs) =
+  case x of
+    True  -> 1 + boolLength xs
+    False -> 1 + boolLength xs
 
 ------------------------------------------------------------------------------
--- Ex 3: Define the function validate which, given a predicate and a
--- value, evaluates to the value. However, validate should also force the
--- result of `predicate value`, even though it is not used.
---
--- Examples:
---   validate even 3               ==>  3
---   validate odd 3                ==>  3
---   validate undefined 3          ==>  an error!
---   validate (\x -> undefined) 3  ==>  an error!
+
+-- Ex 3: Force predicate result but return value
 
 validate :: (a -> Bool) -> a -> a
-validate predicate value = todo
+validate predicate value =
+  case predicate value of
+    True  -> value
+    False -> value
 
 ------------------------------------------------------------------------------
--- Ex 4: Even though we can't implement the generic seq function
--- ourselves, we can implement it manually for specific datatypes.
---
--- The type class MySeq contains the method myseq which is supposed to
--- work like the built-in seq function. Implement the given MySeq
--- instances.
---
--- Just like in the course material, we use the special value
--- `undefined` here to illustrate what myseq evaluates. The tests for
--- this exercise also use undefined.
---
--- Examples:
---   myseq True  0 ==> 0
---   myseq ((\x -> x) True) 0 ==> 0
---   myseq (undefined :: Bool) 0
---     ==> *** Exception: Prelude.undefined
---   myseq (3::Int) True ==> True
---   myseq (undefined::Int) True
---     ==> *** Exception: Prelude.undefined
---   myseq [1,2] 'z' ==> 'z'
---   myseq [undefined] 'z' ==> 'z'           -- [undefined] is in WHNF
---   myseq (1:undefined) 'z' ==> 'z'         -- 1:undefined is in WHNF
---   myseq (undefined:[2,3]) 'z' ==> 'z'     -- undefined:[2,3] is in WHNF
---   myseq [1..] 'z' ==> 'z'
---   myseq (undefined::[Int])
---     ==> *** Exception: Prelude.undefined
+
+-- Ex 4: Simulate seq using pattern matching
 
 class MySeq a where
   myseq :: a -> b -> b
 
+-- Force evaluation of Bool
 instance MySeq Bool where
-  myseq = todo
+  myseq x y = case x of
+    True  -> y
+    False -> y
 
+-- Force evaluation of Int
 instance MySeq Int where
-  myseq = todo
+  myseq x y = case x of
+    0 -> y
+    _ -> y
 
+-- Lists are lazy by default; only top constructor is matched
 instance MySeq [a] where
-  myseq = todo
+  myseq x y = case x of
+    []     -> y
+    (_:_)  -> y
