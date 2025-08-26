@@ -1,117 +1,82 @@
--- Exercise set 4b: folds
-
 module Set4b where
 
 import Mooc.Todo
+import Data.Maybe (maybe)
 
-------------------------------------------------------------------------------
--- Ex 1: countNothings with a fold. The function countNothings from
--- the course material can be implemented using foldr. Your task is to
--- define countHelper so that the following definition of countNothings
--- works.
---
--- Hint: You can start by trying to add a type signature for countHelper.
---
--- Challenge: look up the maybe function and use it in countHelper.
---
--- Examples:
---   countNothings []  ==>  0
---   countNothings [Just 1, Nothing, Just 3, Nothing]  ==>  2
-
+-- Ex 1
+-- countHelper increases accumulator if current Maybe is Nothing,
+-- otherwise leaves accumulator unchanged.
 countNothings :: [Maybe a] -> Int
 countNothings xs = foldr countHelper 0 xs
 
-countHelper = todo
+countHelper :: Maybe a -> Int -> Int
+countHelper = \mx acc -> maybe (acc + 1) (const acc) mx
+-- Explanation:
+-- maybe :: b -> (a -> b) -> Maybe a -> b
+-- Here, if Nothing, increment acc by 1; if Just _, keep acc.
 
-------------------------------------------------------------------------------
--- Ex 2: myMaximum with a fold. Just like in the previous exercise,
--- define maxHelper so that the given definition of myMaximum works.
---
--- Examples:
---   myMaximum []  ==>  0
---   myMaximum [1,3,2]  ==>  3
-
+-- Ex 2
+-- maxHelper takes current element and accumulator (max so far), returns max.
 myMaximum :: [Int] -> Int
 myMaximum [] = 0
 myMaximum (x:xs) = foldr maxHelper x xs
 
-maxHelper = todo
+maxHelper :: Int -> Int -> Int
+maxHelper x acc = if x > acc then x else acc
 
-------------------------------------------------------------------------------
--- Ex 3: compute the sum and length of a list with a fold. Define
--- slHelper and slStart so that the given definition of sumAndLength
--- works. This could be used to compute the average of a list.
---
--- Start by giving slStart and slHelper types.
---
--- Examples:
---   sumAndLength []             ==>  (0.0,0)
---   sumAndLength [1.0,2.0,4.0]  ==>  (7.0,3)
-
-
-sumAndLength :: [Double] -> (Double,Int)
+-- Ex 3
+-- slHelper adds current number to sum and increments count
+-- slStart is starting tuple (0,0)
+sumAndLength :: [Double] -> (Double, Int)
 sumAndLength xs = foldr slHelper slStart xs
 
-slStart = todo
-slHelper = todo
+slStart :: (Double, Int)
+slStart = (0.0, 0)
 
-------------------------------------------------------------------------------
--- Ex 4: implement concat with a fold. Define concatHelper and
--- concatStart so that the given definition of myConcat joins inner
--- lists of a list.
---
--- Examples:
---   myConcat [[]]                ==> []
---   myConcat [[1,2,3],[4,5],[6]] ==> [1,2,3,4,5,6]
+slHelper :: Double -> (Double, Int) -> (Double, Int)
+slHelper x (sum, len) = (sum + x, len + 1)
 
+-- Ex 4
+-- concatHelper prepends current list to accumulator (which is a list)
+-- concatStart is empty list
 myConcat :: [[a]] -> [a]
 myConcat xs = foldr concatHelper concatStart xs
 
-concatStart = todo
-concatHelper = todo
+concatStart :: [a]
+concatStart = []
 
-------------------------------------------------------------------------------
--- Ex 5: get all occurrences of the largest number in a list with a
--- fold. Implement largestHelper so that the given definition of largest works.
---
--- Examples:
---   largest [] ==> []
---   largest [1,3,2] ==> [3]
---   largest [1,3,2,3] ==> [3,3]
+concatHelper :: [a] -> [a] -> [a]
+concatHelper xs acc = xs ++ acc
+-- Since (++) is not disallowed here, we can use it.
+-- If not, could implement (++) with recursion, but not needed now.
 
+-- Ex 5
+-- largestHelper keeps track of list of largest elements seen so far.
 largest :: [Int] -> [Int]
 largest xs = foldr largestHelper [] xs
 
-largestHelper = todo
+largestHelper :: Int -> [Int] -> [Int]
+largestHelper x [] = [x]
+largestHelper x acc@(y:_)
+  | x > y = [x]
+  | x == y = x : acc
+  | otherwise = acc
 
-
-------------------------------------------------------------------------------
--- Ex 6: get the first element of a list with a fold. Define
--- headHelper so that the given definition of myHead works.
---
--- Start by giving headHelper a type.
---
--- Examples:
---   myHead []  ==>  Nothing
---   myHead [1,2,3]  ==>  Just 1
-
+-- Ex 6
+-- headHelper returns Just the current element, ignoring accumulator
+-- foldr processes from left to right, so first element is picked
 myHead :: [a] -> Maybe a
 myHead xs = foldr headHelper Nothing xs
 
-headHelper = todo
+headHelper :: a -> Maybe a -> Maybe a
+headHelper x _ = Just x
 
-------------------------------------------------------------------------------
--- Ex 7: get the last element of a list with a fold. Define lasthelper
--- so that the given definition of myLast works.
---
--- Start by giving lastHelper a type.
---
--- Examples:
---   myLast [] ==> Nothing
---   myLast [1,2,3] ==> Just 3
-
+-- Ex 7
+-- lastHelper returns accumulator if it's Just something,
+-- otherwise wraps current element as Just (the last element seen)
 myLast :: [a] -> Maybe a
 myLast xs = foldr lastHelper Nothing xs
 
-lastHelper = todo
-
+lastHelper :: a -> Maybe a -> Maybe a
+lastHelper x Nothing = Just x
+lastHelper _ acc = acc
