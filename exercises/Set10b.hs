@@ -84,6 +84,20 @@ class MySeq a where
   myseq :: a -> b -> b
 
 instance MySeq Bool where
+  myseq b x = case b of
+    True -> x
+    False -> x
+
+instance MySeq Int where
+  myseq i x = case i + 0 of
+    _ -> x
+
+instance MySeq [a] where
+  myseq xs x = case xs of
+    [] -> x
+    (_:_) -> x
+
+instance MySeq Bool where
   myseq = todo
 
 instance MySeq Int where
