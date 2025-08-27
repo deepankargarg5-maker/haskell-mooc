@@ -372,3 +372,15 @@ instance (Functor f, Functor g) => Functor (Both f g) where
 instance (Applicative f, Applicative g) => Applicative (Both f g) where
   pure = todo
   liftA2 = todo
+
+
+-- Exercise 10: Both functor (if required by tests)
+data Both f g a = Both (f a) (g a)
+  deriving (Show, Eq)
+
+instance (Functor f, Functor g) => Functor (Both f g) where
+  fmap f (Both fa ga) = Both (fmap f fa) (fmap f ga)
+
+instance (Applicative f, Applicative g) => Applicative (Both f g) where
+  pure x = Both (pure x) (pure x)
+  Both f1 g1 <*> Both f2 g2 = Both (f1 <*> f2) (g1 <*> g2)
